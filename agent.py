@@ -41,8 +41,12 @@ try:
                 [SimpleMessage(role=Role.USER, content=user_input)]
             ),
         }
-        assistant_output = client.messages.create(**request)
-        log(request=request, response=assistant_output)
-        print(f"🤖 {Role.ASSISTANT}: {get_text(assistant_output)}")
+        try:
+            assistant_output = client.messages.create(**request)
+            log(request=request, response=assistant_output)
+            print(f"🤖 {Role.ASSISTANT}: {get_text(assistant_output)}")
+        except anthropic.APIError as error:
+            log(request=request, error=str(error))
+            print(error)
 except (KeyboardInterrupt, EOFError):
     print("\ngoodbye!")
