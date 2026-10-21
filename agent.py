@@ -3,16 +3,17 @@
 import anthropic
 
 client = anthropic.Anthropic()
+from abstractions import convert
+from abstractions.anthropic_model import AnthropicModel
+from abstractions.role import Role
+from abstractions.types import SimpleMessage
 
 message = client.messages.create(
-    model="claude-haiku-5-5",
+    model=AnthropicModel.HAIKU,
     max_tokens=1000,
-    messages=[
-        {
-            "role": "user",
-            "content": "how heavy is the earth?",
-        }
-    ],
+    messages=convert.messages(
+        [SimpleMessage(role=Role.USER, content="how is the earth?")]
+    ),
 )
 
 for block in message.content:
