@@ -30,18 +30,19 @@ def get_text(message: Message) -> str:
 
 console = Console()
 
+try:
+    while True:
+        user_input = console.input(f"😃 {Role.USER}: ")
 
-while True:
-    user_input = console.input(f"😃 {Role.USER}: ")
-
-    request: MessageCreateParamsNonStreaming = {
-        "model": AnthropicModel.HAIKU,
-        "max_tokens": 1000,
-        "messages": convert.messages(
-            [SimpleMessage(role=Role.USER, content=user_input)]
-        ),
-    }
-    assistant_output = client.messages.create(**request)
-    log(request=request, response=assistant_output)
-
-    print(f"🤖 {Role.ASSISTANT}: {get_text(assistant_output)}")
+        request: MessageCreateParamsNonStreaming = {
+            "model": AnthropicModel.HAIKU,
+            "max_tokens": 1000,
+            "messages": convert.messages(
+                [SimpleMessage(role=Role.USER, content=user_input)]
+            ),
+        }
+        assistant_output = client.messages.create(**request)
+        log(request=request, response=assistant_output)
+        print(f"🤖 {Role.ASSISTANT}: {get_text(assistant_output)}")
+except (KeyboardInterrupt, EOFError):
+    print("\ngoodbye!")
