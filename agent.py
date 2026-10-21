@@ -26,5 +26,17 @@ assistant_output = client.messages.create(
     ),
 )
 
+print(f"🤖 {Role.ASSISTANT}: {get_text(assistant_output)}")
+
+
+user_input = console.input(f"😃 {Role.USER}: ")
+
+assistant_output = client.messages.create(
+    model=AnthropicModel.HAIKU,
+    max_tokens=1000,
+    messages=convert.messages(
+        [SimpleMessage(role=Role.USER, content=user_input)]
+    ),
+)
 
 print(f"🤖 {Role.ASSISTANT}: {get_text(assistant_output)}")
