@@ -31,20 +31,25 @@ def get_text(message: Message) -> str:
 console = Console()
 
 try:
+    messages: list[SimpleMessage] = []
     while True:
         user_input = console.input(f"😃 {Role.USER}: ")
 
+        messages.append(SimpleMessage(role=Role.USER, content=user_input))
         request: MessageCreateParamsNonStreaming = {
             "model": AnthropicModel.HAIKU,
             "max_tokens": 1000,
-            "messages": convert.messages(
-                [SimpleMessage(role=Role.USER, content=user_input)]
-            ),
+            "messages": convert.messages(messages),
         }
         try:
-            assistant_output = client.messages.create(**request)
-            log(request=request, response=assistant_output)
-            print(f"🤖 {Role.ASSISTANT}: {get_text(assistant_output)}")
+            response = client.messages.create(**request)
+            log(request=request, response=response)
+
+            assistant_output = get_text(response)
+            print(f"🤖 {Role.ASSISTANT}: {assistant_output}")
+            messages.append(
+                SimpleMessage(role=Role.ASSISTANT, content=assistant_output)
+            )
         except anthropic.APIError as error:
             log(request=request, error=str(error))
             print(error)
