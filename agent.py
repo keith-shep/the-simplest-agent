@@ -8,10 +8,10 @@ from anthropic.types.message_create_params import MessageCreateParamsNonStreamin
 from rich.console import Console
 
 client = anthropic.Anthropic()
-from abstractions import convert
+from anthropic.types import MessageParam
+
 from abstractions.anthropic_model import AnthropicModel
 from abstractions.role import Role
-from abstractions.types import SimpleMessage
 from logger import open_terminal, tty_logger
 
 parser = argparse.ArgumentParser()
@@ -31,15 +31,15 @@ def get_text(message: Message) -> str:
 console = Console()
 
 try:
-    messages: list[SimpleMessage] = []
+    messages: list[MessageParam] = []
     while True:
         user_input = console.input(f"😃 {Role.USER}: ")
 
-        messages.append(SimpleMessage(role=Role.USER, content=user_input))
+        messages.append(MessageParam(role=Role.USER, content=user_input))
         request: MessageCreateParamsNonStreaming = {
             "model": AnthropicModel.HAIKU,
             "max_tokens": 1000,
-            "messages": convert.messages(messages),
+            "messages": messages,
         }
         try:
             response = client.messages.create(**request)
@@ -47,9 +47,7 @@ try:
 
             assistant_output = get_text(response)
             print(f"🤖 {Role.ASSISTANT}: {assistant_output}")
-            messages.append(
-                SimpleMessage(role=Role.ASSISTANT, content=assistant_output)
-            )
+            messages.append(MessageParam(role=Role.ASSISTANT, content=assistant_output))
         except anthropic.APIError as error:
             log(request=request, error=str(error))
             print(error)
