@@ -1,6 +1,7 @@
 # via https://platform.claude.com/docs/en/get-started
 
 import anthropic
+from anthropic.types import Message
 from rich.console import Console
 
 client = anthropic.Anthropic()
@@ -8,6 +9,11 @@ from abstractions import convert
 from abstractions.anthropic_model import AnthropicModel
 from abstractions.role import Role
 from abstractions.types import SimpleMessage
+
+
+def get_text(message: Message) -> str:
+    return "".join(block.text for block in message.content if block.type == "text")
+
 
 console = Console()
 user_input = console.input("user: ")
@@ -20,6 +26,5 @@ message = client.messages.create(
     ),
 )
 
-for block in message.content:
-    if block.type == "text":
-        print(block.text)
+
+print(get_text(message))
