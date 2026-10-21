@@ -16,9 +16,9 @@ def get_text(message: Message) -> str:
 
 
 console = Console()
-user_input = console.input("user: ")
+user_input = console.input(f"😃 {Role.USER}: ")
 
-message = client.messages.create(
+assistant_output = client.messages.create(
     model=AnthropicModel.HAIKU,
     max_tokens=1000,
     messages=convert.messages(
@@ -27,4 +27,4 @@ message = client.messages.create(
 )
 
 
-print(get_text(message))
+print(f"🤖 {Role.ASSISTANT}: {get_text(assistant_output)}")
