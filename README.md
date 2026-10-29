@@ -1,14 +1,13 @@
 This repo is best read by [commits](https://github.com/keith-shep/the-simplest-agent/commits/main/). 
 
 ```
-set `ANTHROPIC_API_KEY` in `.env`
+set `ANTHROPIC_API_KEY` and `REPO_PATH` in `.env`
 
 ```
 
 ```bash
-python3 -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
-python agent.py
+docker compose build
+docker compose run --rm harness   # starts the agent on REPO_PATH, mounted at /app/repo
 ```
 
 To watch each request and response in a second terminal:

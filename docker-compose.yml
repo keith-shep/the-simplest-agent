@@ -1,0 +1,22 @@
+# two containers: the harness holds the key and the loop, the repo container holds your repo and runs every tool call
+services:
+  harness:
+    build: .
+    env_file: .env # the API key reaches the harness only, never the repo container
+    stdin_open: true
+    tty: true
+    read_only: true # the harness code in /app/harness can't change itself
+    tmpfs:
+      - /tmp
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock # so it can `docker exec` tool calls into the repo container
+    depends_on:
+      - repo
+
+  repo:
+    image: python:3.13-slim
+    container_name: repo
+    working_dir: /app/repo
+    command: sleep infinity # stays up so the harness can exec into it; `docker compose down` resets it
+    volumes:
+      - ${REPO_PATH:?set REPO_PATH in .env to the repo the agent should work on}:/app/repo
