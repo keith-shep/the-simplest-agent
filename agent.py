@@ -42,6 +42,22 @@ try:
         request: MessageCreateParamsNonStreaming = {
             "model": AnthropicModel.HAIKU,
             "max_tokens": 1000,
+            "tools": [
+                {
+                    "name": "get_current_time",
+                    "description": "get current time in users timezone",
+                    "input_schema": {
+                        "type": "object",
+                        "properties": {
+                            "timezone": {
+                                "type": "string",
+                                "description": "timezone that user requested for",
+                            },
+                        },
+                        "required": ["timezone"],
+                    },
+                }
+            ],
             "system": SYSTEM_PROMPT,
             "messages": messages,
         }
