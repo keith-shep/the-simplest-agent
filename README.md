@@ -10,3 +10,9 @@ python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 python agent.py
 ```
+
+To watch each request and response in a second terminal:
+
+```bash
+python agent.py --debug
+```
