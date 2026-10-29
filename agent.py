@@ -1,6 +1,7 @@
 # via https://platform.claude.com/docs/en/get-started
 
 import argparse
+from pathlib import Path
 
 import anthropic
 from anthropic.types import Message
@@ -28,6 +29,8 @@ def get_text(message: Message) -> str:
     return "".join(block.text for block in message.content if block.type == "text")
 
 
+SYSTEM_PROMPT = (Path(__file__).parent / "system_prompt.md").read_text().strip()
+
 console = Console()
 
 try:
@@ -39,6 +42,7 @@ try:
         request: MessageCreateParamsNonStreaming = {
             "model": AnthropicModel.HAIKU,
             "max_tokens": 1000,
+            "system": SYSTEM_PROMPT,
             "messages": messages,
         }
         try:
