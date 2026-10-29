@@ -1,6 +1,7 @@
 # via https://platform.claude.com/docs/en/get-started
 
 import argparse
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any, cast
 
@@ -18,9 +19,12 @@ from abstractions.role import Role
 from abstractions.stop_reason import StopReason
 from abstractions.types import SimpleToolResult
 from logger import open_terminal, tty_logger
-from tools import get_current_time
+from tools import get_current_time, read_file
 
-handlers = {"get_current_time": get_current_time}
+handlers: dict[str, Callable[..., str]] = {
+    "get_current_time": get_current_time,
+    "read_file": read_file,
+}
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -44,11 +48,16 @@ def run_tools(message: Message) -> list[ToolResultBlockParam]:
     tool_results: list[ToolResultBlockParam] = []
     for block in get_tool_uses(message):
         tool_input = cast(dict[str, Any], block.input)
-        result = handlers[block.name](**tool_input)
+        try:
+            result = handlers[block.name](**tool_input)
+            is_error = False
+        except Exception as error:  # noqa: BLE001 - hand any tool error to Claude instead of crashing
+            result = f"{type(error).__name__}: {error}"
+            is_error = True
         print(f"🔧 {block.name}({tool_input}) → {result}")
         tool_results.append(
             convert.tool_result(
-                SimpleToolResult(tool_use_id=block.id, content=result)
+                SimpleToolResult(tool_use_id=block.id, content=result, is_error=is_error)
             )
         )
     return tool_results
@@ -75,7 +84,21 @@ try:
                         "type": "object",
                         "properties": {},
                     },
-                }
+                },
+                {
+                    "name": "read_file",  # needs to be the tool name read_file()
+                    "description": "read the content of a file on a machine",
+                    "input_schema": {
+                        "type": "object",
+                        "properties": {
+                            "path": {
+                                "type": "string",
+                                "description": "the path to a file to read",
+                            },
+                        },
+                        "required": ["path"],
+                    },
+                },
             ],
             "system": SYSTEM_PROMPT,
             "messages": messages,
