@@ -1,7 +1,6 @@
 # via https://platform.claude.com/docs/en/get-started
 
 import argparse
-from collections.abc import Callable
 from pathlib import Path
 from typing import Any, cast
 
@@ -19,12 +18,9 @@ from abstractions.role import Role
 from abstractions.stop_reason import StopReason
 from abstractions.types import SimpleToolResult
 from logger import open_terminal, tty_logger
-from tools import get_current_time, read_file
+from tools import TOOLS
 
-handlers: dict[str, Callable[..., str]] = {
-    "get_current_time": get_current_time,
-    "read_file": read_file,
-}
+handlers = {tool.name: tool.handler for tool in TOOLS}
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -76,30 +72,7 @@ try:
         request: MessageCreateParamsNonStreaming = {
             "model": AnthropicModel.HAIKU,
             "max_tokens": 1000,
-            "tools": [
-                {
-                    "name": "get_current_time",  # needs to be the tool name get_current_time()
-                    "description": "get the current time in UTC",
-                    "input_schema": {
-                        "type": "object",
-                        "properties": {},
-                    },
-                },
-                {
-                    "name": "read_file",  # needs to be the tool name read_file()
-                    "description": "read the content of a file on a machine",
-                    "input_schema": {
-                        "type": "object",
-                        "properties": {
-                            "path": {
-                                "type": "string",
-                                "description": "the path to a file to read",
-                            },
-                        },
-                        "required": ["path"],
-                    },
-                },
-            ],
+            "tools": convert.tools(TOOLS),
             "system": SYSTEM_PROMPT,
             "messages": messages,
         }
