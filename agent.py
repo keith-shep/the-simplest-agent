@@ -40,6 +40,20 @@ def get_tool_uses(message: Message) -> list[ToolUseBlock]:
     return [block for block in message.content if block.type == "tool_use"]
 
 
+def run_tools(message: Message) -> list[ToolResultBlockParam]:
+    tool_results: list[ToolResultBlockParam] = []
+    for block in get_tool_uses(message):
+        tool_input = cast(dict[str, Any], block.input)
+        result = handlers[block.name](**tool_input)
+        print(f"🔧 {block.name}({tool_input}) → {result}")
+        tool_results.append(
+            convert.tool_result(
+                SimpleToolResult(tool_use_id=block.id, content=result)
+            )
+        )
+    return tool_results
+
+
 SYSTEM_PROMPT = (Path(__file__).parent / "system_prompt.md").read_text().strip()
 
 console = Console()
@@ -74,17 +88,9 @@ try:
                 messages.append(
                     MessageParam(role=Role.ASSISTANT, content=response.content)
                 )
-                tool_results: list[ToolResultBlockParam] = []
-                for block in get_tool_uses(response):
-                    tool_input = cast(dict[str, Any], block.input)
-                    result = handlers[block.name](**tool_input)
-                    print(f"🔧 {block.name}({tool_input}) → {result}")
-                    tool_results.append(
-                        convert.tool_result(
-                            SimpleToolResult(tool_use_id=block.id, content=result)
-                        )
-                    )
-                messages.append(MessageParam(role=Role.USER, content=tool_results))
+                messages.append(
+                    MessageParam(role=Role.USER, content=run_tools(response))
+                )
 
                 response = client.messages.create(**request)
                 log(request=request, response=response)
